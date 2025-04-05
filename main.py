@@ -54,9 +54,74 @@ def generate_timetable():
     """
     # Initialize an empty timetable
     timetable = {day: {period: {} for period in range(1, periods_per_day + 1)} for day in days_of_week}
+    print(timetable)
+    remaining_periods = {cls: class_subject_periods[cls].copy() for cls in classes}
+    teacher_schedule = {teacher: {day: set() for day in days_of_week} for teacher in teachers}
+
+    def can_assign(day, period, cls, subject, teacher):
+        if period in teacher_schedule[teacher][day]:
+            return False
+        if subject not in teachers[teacher]:
+            return False
+        if remaining_periods[cls][subject] <= 0:
+            return False
+        return True
+    # def cannot_assign(day, period, cls, subject, teachdr):
+    #     if period not in teacher_name[teacher][day]:
+    #         return True
+    #     if subject in teacher[teacher]:
+    #         return True
+    #     if remaining_periods[cls][subject] <=0:
+    #         return True
+    #     return False
+    
+    def assign_period(day_idx=0, period=1):
+        if day_idx >= len(days_of_week):
+            return all(sum(periods.values()) == 0 
+                      for periods in remaining_periods.values())
+        
+        current_day = days_of_week[day_idx]
+        if period > periods_per_day:
+            return assign_period(day_idx + 1, 1)
+        
+        for cls in classes:
+            for subject, periods_needed in remaining_periods[cls].items():
+                if periods_needed <= 0:
+                    continue
+                    
+                for teacher in teachers:
+                    if can_assign(current_day, period, cls, subject, teacher):
+                        timetable[current_day][period][cls] = (subject, teacher)
+                        remaining_periods[cls][subject] -= 1
+                        teacher_schedule[teacher][current_day].add(period)
+                        
+                        next_period = period + 1
+                        next_day = day_idx
+                        if next_period > periods_per_day:
+                            next_period = 1
+                            next_day += 1
+                            
+                        if assign_period(next_day, next_period):
+                            return True
+                            
+                        del timetable[current_day][period][cls]
+                        remaining_periods[cls][subject] += 1
+                        teacher_schedule[teacher][current_day].remove(period)
+        
+        return assign_period(day_idx, period + 1)
+    success = assign_period()
+    if not success:
+        raise ValueError("Unable to generate valid timetable with given constraints")
+   
+
+
+
     
     # TODO: Implement the timetable generation algorithm
+    
     # 1. Check if a valid timetable is possible with the given constraints
+    
+
     # 2. Assign subjects and teachers to periods for each class
     # 3. Ensure all constraints are satisfied
     
@@ -70,6 +135,9 @@ def display_timetable(timetable):
     Args:
         timetable (dict): The generated timetable
     """
+    for cls in classes:
+        print(f"Timetable for class {cls}")
+        print()
     # TODO: Implement timetable display logic
     # Display the timetable for each class
     # Display the timetable for each teacher
@@ -116,3 +184,19 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+Can you give list of things that are done like this, dont mention any code 
+A. For generating timetable
+1.First we will calculate the total no of classes which are required to maintain a proper timetable for the complete class. 
+2. Now we will track rema periods needed for each class and subject
+3. After this we will check for teachers availability if the teacher can tech the student during an hour and make an teacher schedule
+4. (i)Now we check if the teacher is available in the time slot from the teacher's schedule, if the teacher is present then we will return false
+  (ii) Now we check if teacher can teach subject if no we return false
+  (iii) Now we check if the class needs this subject, if the subjects class has alnready been done then we will return false
+5. If all the above condition satisfies i will return true that we can assign a teacher
+
+6.Now to assign a period for the class we check with the days of the weekly
+(i) now we check if all days schedule are fixed for the base condition we will get ack all the periods. 
+(ii) if the above condition does not fullfills then we take the current days
+(iii) now if the periods in that days is less than the no of periods that are required then  we assign period of (day + 1)
+(iv) we will try to schedule each class for this period of the day  
