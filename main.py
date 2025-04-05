@@ -66,53 +66,8 @@ def generate_timetable():
         if remaining_periods[cls][subject] <= 0:
             return False
         return True
-    # def cannot_assign(day, period, cls, subject, teachdr):
-    #     if period not in teacher_name[teacher][day]:
-    #         return True
-    #     if subject in teacher[teacher]:
-    #         return True
-    #     if remaining_periods[cls][subject] <=0:
-    #         return True
-    #     return False
-    
-    def assign_period(day_idx=0, period=1):
-        if day_idx >= len(days_of_week):
-            return all(sum(periods.values()) == 0 
-                      for periods in remaining_periods.values())
-        
-        current_day = days_of_week[day_idx]
-        if period > periods_per_day:
-            return assign_period(day_idx + 1, 1)
-        
-        for cls in classes:
-            for subject, periods_needed in remaining_periods[cls].items():
-                if periods_needed <= 0:
-                    continue
-                    
-                for teacher in teachers:
-                    if can_assign(current_day, period, cls, subject, teacher):
-                        timetable[current_day][period][cls] = (subject, teacher)
-                        remaining_periods[cls][subject] -= 1
-                        teacher_schedule[teacher][current_day].add(period)
-                        
-                        next_period = period + 1
-                        next_day = day_idx
-                        if next_period > periods_per_day:
-                            next_period = 1
-                            next_day += 1
-                            
-                        if assign_period(next_day, next_period):
-                            return True
-                            
-                        del timetable[current_day][period][cls]
-                        remaining_periods[cls][subject] += 1
-                        teacher_schedule[teacher][current_day].remove(period)
-        
-        return assign_period(day_idx, period + 1)
-    success = assign_period()
-    if not success:
-        raise ValueError("Unable to generate valid timetable with given constraints")
-   
+
+  
 
 
 
@@ -185,18 +140,19 @@ def main():
 if __name__ == "__main__":
     main()
 
-Can you give list of things that are done like this, dont mention any code 
-A. For generating timetable
-1.First we will calculate the total no of classes which are required to maintain a proper timetable for the complete class. 
-2. Now we will track rema periods needed for each class and subject
-3. After this we will check for teachers availability if the teacher can tech the student during an hour and make an teacher schedule
-4. (i)Now we check if the teacher is available in the time slot from the teacher's schedule, if the teacher is present then we will return false
-  (ii) Now we check if teacher can teach subject if no we return false
-  (iii) Now we check if the class needs this subject, if the subjects class has alnready been done then we will return false
-5. If all the above condition satisfies i will return true that we can assign a teacher
 
-6.Now to assign a period for the class we check with the days of the weekly
-(i) now we check if all days schedule are fixed for the base condition we will get ack all the periods. 
-(ii) if the above condition does not fullfills then we take the current days
-(iii) now if the periods in that days is less than the no of periods that are required then  we assign period of (day + 1)
-(iv) we will try to schedule each class for this period of the day  
+# A. For generating timetable:
+# 1. Calculate the total number of classes required to create a complete timetable for all classes, ensuring all subject period requirements are met.
+# 2. Track the remaining periods needed for each class and subject to ensure all are scheduled appropriately.
+# 3. Assess teacher availability by creating a schedule that tracks when each teacher is free or occupied, ensuring they can teach during specific time slots.
+# 4. Verify assignment feasibility by:
+#    (i) Checking if a teacher is available in a given time slot, ensuring no scheduling conflicts exist.
+#    (ii) Confirming that the teacher is qualified to teach the assigned subject.
+#    (iii) Ensuring the class still requires periods for the subject, avoiding over-scheduling.
+# 5. If all conditions are satisfied, assign the teacher and subject to the class for that time slot, and continue filling the timetable.
+# 6. Repeat the process across all days and periods, adjusting as needed to fit the weekly structure (e.g., 5 days, 6 periods per day).
+# 7. Ensure the solution accommodates the fixed constraints, such as the number of periods per day and days per week.
+# 8. Validate the completed timetable to confirm all requirements are met, including total periods per subject and no teacher overlaps.
+# 9. Display the final timetable in a clear format, showing schedules for both classes and teachers.
+
+# These steps outline a systematic approach to creating a balanced and functional school timetable while respecting all given constraints.
